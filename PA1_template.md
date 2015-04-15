@@ -12,7 +12,8 @@ The variables in the dataset are:
 First, we read in the raw data and look at how the steps are distributed per day. To do this we sum the number of steps taken in each day, then look at the histogram and mean and median of those totals.
 
 
-```{r part1}
+
+```r
 # original data
 odata <- read.csv('activity.csv')
 
@@ -21,15 +22,18 @@ steps <- by(odata$steps, odata$date, sum)
 s <- do.call(rbind, as.list(steps))
 
 hist(s, main="Distribution of Steps per Day", xlab="Steps per Day")
-```  
+```
 
-The mean number of steps per day, not including values which were 'NA', is `r sprintf("%7.2f", mean(s, na.rm=TRUE))`. The median number of steps per day is `r median(s, na.rm=TRUE)`.
+![plot of chunk part1](figure/part1-1.png) 
+
+The mean number of steps per day, not including values which were 'NA', is 10766.19. The median number of steps per day is 10765.
 
 ### Average Daily Activity Pattern
 
 Next, we want to look at average daily activity. This graph shows the average number of steps taken in each 5-minute interval, averaged across all the days:
 
-```{r part2}
+
+```r
 # Remove entries where steps == NA
 ndata <- odata[!is.na(odata$steps),]    
 # computer average steps per interval
@@ -37,13 +41,16 @@ a <- tapply(ndata$steps, ndata$interval, FUN=mean)
 plot(names(a), a, type='l', main="Daily Activity", xlab="Interval", ylab="Num Steps")
 ```
 
-The time interval which contains the highest number of steps is `r names(a)[max(a)]` - that step count is `r sprintf("%5.1f", max(a))`.
+![plot of chunk part2](figure/part2-1.png) 
 
-We noted that there are some missing values in the data, coded as NA. The number of missing values is `r sum(is.na(odata$steps))`. (The total number of values is `r nrow(odata)`)
+The time interval which contains the highest number of steps is 1705 - that step count is 206.2.
+
+We noted that there are some missing values in the data, coded as NA. The number of missing values is 2304. (The total number of values is 17568)
 
 We are going to fill in the missing values with the average of the real values for that interval. Then again show a histogram, the median and the mean values.
 
-```{r part3}
+
+```r
 # this adds a column that is the average of the given intervals - we
 # already calculated this, so just tack it on
 odata$average <- a
@@ -59,8 +66,24 @@ f$steps <- ifelse(is.na(f$steps), f$average, f$steps)
 steps <- by(f$steps, f$date, sum)
 s <- do.call(rbind, as.list(steps))
 hist(s, main="Distribution of Steps per Day", xlab="Steps per Day")
+```
+
+![plot of chunk part3](figure/part3-1.png) 
+
+```r
 median(s)
+```
+
+```
+## [1] 10766.19
+```
+
+```r
 mean(s)
+```
+
+```
+## [1] 10766.19
 ```
 
 Note that since we filled in the missing values with the average, the new average didn't really change. If we had filled in the missing values with something else, such as 0, we would get something more different from the original values. 
@@ -70,11 +93,12 @@ Next we explore whether there are different patterns on the weekend, when compar
 
 To do this, we create a two-valued variable, called 'day', which is either 'weekend' or 'weekday'. Then we plot the average number of steps per interval for each type of day.
 
-```{r part4, fig.height=10, fig.width=10}
+
+```r
 weekend <- c("Sat", "Sun")
 f$day <- as.factor(ifelse(weekdays(as.Date(f$date), abbreviate=TRUE) %in% weekend, "weekend", "weekday"))
 
-# now create two data frames, one for each type of day
+# now create two arrays, one for each type of day
 wday <- f[which(f$day == "weekday"),]
 wend <- f[which(f$day == "weekend"),]
 
@@ -87,3 +111,5 @@ par(mfrow=c(2,1))
 plot(wday_steps, type='l', main="Weekdays", xlab="Interval", ylab="Average Number of Steps")
 plot(wend_steps, type='l', main="Weekends", xlab="Interval", ylab="Average Number of Steps")
 ```
+
+![plot of chunk part4](figure/part4-1.png) 
